@@ -24,18 +24,21 @@ if [ "$remainingK" -lt "9876543210" ]; then
 fi
 
 
-sudo apt-get -y update
-sudo apt-get -y dist-upgrade 
+sudo apt -y update
+sudo apt -y full-upgrade 
 git config --global user.email "chan@alumni.ncu.edu.tw"
 git config --global user.name "mochechan"
 git config --global push.default simple
 
 echo nodejs should be installed manually because nodejs installed by apt-get is very old.
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+sudo apt install -y nodejs
+exit 99;
 cd /tmp
 wget https://nodejs.org/dist/v4.4.1/node-v4.4.1-linux-armv6l.tar.gz
 tar -zxf node-v4.4.1-linux-armv6l.tar.gz
 sudo mv -v node-v4.4.1-linux-armv6l/* /usr/local/
-sudo npm install -g node-inspector http-server forever
+sudo npm install -g node-inspector http-server forever pm2 
 exit 99;
 
 
