@@ -1,7 +1,6 @@
 #!/bin/bash 
-# for a new Raspberry PI updated: RASPBIAN JESSIE 20160316 
+# installation for a new Raspberry PI updated: RASPBIAN JESSIE 20160916 
 echo Please manually setup: 1 expand filesystem 2 enable camera 3 enable device tree
-
 
 cd ~
 cat /proc/version
@@ -11,11 +10,9 @@ cat /proc/asound/modules # show all available sound modules
 vcgencmd measure_temp # show cpu temperature
 vcgencmd get_mem arm && vcgencmd get_mem gpu # show free memory for cpu & gpu
 
-
 df -k -h /
 remainingK=$(($(stat -f --format="%a*%S" .))) 
 echo $remainingK
-echo please run sudo raspi-config manually before running this script.  Expand Filesystem and reboot
 echo please run sudo raspi-config manually before running this script.  Expand Filesystem and reboot
 echo please run sudo raspi-config manually before running this script.  Expand Filesystem and reboot
 if [ "$remainingK" -lt "9876543210" ]; then
@@ -23,9 +20,24 @@ if [ "$remainingK" -lt "9876543210" ]; then
 	exit;
 fi
 
+if [ -d ~/rpicloud ]
+then
+	echo already installed
+fi
+
+tee ~/.profile <<EOF
+# to correct Taiwan's timezone
+TZ='Asia/Taipei'; export TZ
+EOF
+
+tee ~/.vimrc <<EOF
+set number
+set tabstop=2
+EOF
 
 sudo apt -y update
 sudo apt -y full-upgrade 
+sudo apt-get -y install vim screen lirc rtorrent alsa-utils htop exfat-fuse
 git config --global user.email "chan@alumni.ncu.edu.tw"
 git config --global user.name "mochechan"
 git config --global push.default simple
@@ -41,14 +53,7 @@ sudo mv -v node-v4.4.1-linux-armv6l/* /usr/local/
 sudo npm install -g node-inspector http-server forever pm2 
 exit 99;
 
-
-
 #sudo rpi-update # Get the latest firmware, need to reboot
-
-sudo apt-get -y install vim screen git-core lirc rtorrent alsa-utils htop exfat-fuse
-
-
-cat _profile | tee -a ~/.profile
 
 
 #echo nolirc=yes | sudo tee -a /etc/mplayer/mplayer.conf

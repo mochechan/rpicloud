@@ -1,4 +1,0 @@
-
-# correct Taiwan's timezone
-TZ='Asia/Taipei'; export TZ
-
