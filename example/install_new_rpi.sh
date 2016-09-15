@@ -45,6 +45,10 @@ git config --global push.default simple
 echo nodejs should be installed manually because nodejs installed by apt-get is very old.
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 sudo apt install -y nodejs
+sudo npm install -g grunt http-server 
+
+cd ~
+git clone https://github.com/131/h264-live-player.git ~/h264-live-player
 exit 99;
 cd /tmp
 wget https://nodejs.org/dist/v4.4.1/node-v4.4.1-linux-armv6l.tar.gz
