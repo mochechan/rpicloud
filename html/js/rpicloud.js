@@ -1,12 +1,21 @@
 /* rpicloud browser-side javascript API 
 support:
-* R.event.emit("exec", {"command","ls", function() {}});
-* R.event.emit("handler", {"handler","ls", function() {}});
-* R.event.on("ws_onmessage", function () {});
+* R.emit("exec", {"command","ls", function() {}});
+* R.emit("handler", {"handler","ls", function() {}});
+* R.on("ws_onmessage", function () {});
 todo:
 * R.login({username: "", password:""});
 * R.logout({});
+* R.get();
+* R.post();
 */
+
+var config = {
+			ws_port: 9090,
+			ws_ip: window.location.hostname,
+			ws_connected: false,
+			logined: false,
+		};
 
 /////////////////////////////////// start of requiring another js
 // $.getScript("my_lovely_script.js", function(){ alert("Script loaded but not necessarily executed."); });
@@ -17,22 +26,26 @@ function require_js(js) {
 }
 
 if (!window.jQuery) {
-	require_js("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js");
+	//require_js("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js");
+	require_js("https://code.jquery.com/jquery-3.1.1.min.js");
 }
 
-require_js("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js");
-require_js("http://cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js");
+//require_js("http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js");
+//require_js("http://cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js");
 require_js("./js/shared_utility.js");
-console.log(this);
-setTimeout(function(){
-console.log(shared_utility.test());
-},500);
+//console.log(this);
+
+//setTimeout(function(){
+	//FIXME: sometimes trouble
+	//console.log(shared_utility.test());
+//},220);
+
 //require_js("http://cdn.peerjs.com/0.3.14/peer.min.js"); //http://peerjs.com/
 //https://code.google.com/p/crypto-js/
-require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"); 
-require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha1.js"); 
-require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"); 
-require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha3.js"); 
+//require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"); 
+//require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha1.js"); 
+//require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"); 
+//require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha3.js"); 
 
 /////////////////////////////////// end of requiring another js
 
@@ -41,16 +54,9 @@ require_js("http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha3.js
 var R = (typeof module === 'undefined' ? {} : module.exports);
 
 (function (exports, global) {
-	 R = {status: {}, callback_pool:{}, shared_utility: shared_utility, 
-		config: {
-			ws_port: 8080,
-			ws_ip: window.location.hostname,
-			ws_connected: false,
-			logined: false,
-		},
-	};
-	console.log("in R.config");
-	console.log(R.config);
+	R = {status: {}, callback_pool:{}, config: config };
+	console.log("in function() R.config"); 
+
 	//////////////////////////////// start of utility functions
 
 	var timestamp = function () {
@@ -96,25 +102,29 @@ var R = (typeof module === 'undefined' ? {} : module.exports);
 	/////////////////////// start of ws websocket client
 
 	// http://www.html5rocks.com/en/tutorials/websockets/basics/?redirect_from_locale=tw
-	var ws_client = new WebSocket('ws://' + R.config.ws_ip + ':' + R.config.ws_port, ['echo-protocol', 'soap', 'xmpp']);
+	var ws_url = 'ws://' + R.config.ws_ip + ':' + R.config.ws_port + '';
+	//console.log('ws_url: ' + ws_url);
+	var ws_client = new WebSocket(ws_url, []);
+
 
 	ws_client.onopen = function () {
-		console.log("ws.onopen");
-		console.log(arguments);
+		R.status.ws_opened = true;
+		console.log("ws_client.onopen");
+		//console.log(arguments);
   	//ws_client.send('exec {"command":"ls"}'); 
 		//if(R_on['ws_onopen'] && typeof(R_on['ws_onopen']) === 'function') R_on.ws_onopen(arguments);
 	};
 
-	// Log errors
 	ws_client.onerror = function (error) {
+		R.status.ws_opened = false;
   	console.log('WebSocket Error ' + error);
 	  console.log(arguments);
 	};
 
 // messages from the server
 ws_client.onmessage = function () {
-  //console.log('ws_client.onmessage: ' );
-  //console.log(arguments);
+  console.log('ws_client.onmessage: ' );
+  console.log(arguments);
 	var received = arguments[0].data;
 	var parsed;
 	try {
@@ -143,10 +153,11 @@ ws_client.onmessage = function () {
 	} else if (R.callback_pool["ws_onmessage"] && typeof(R.callback_pool["ws_onmessage"].callback) === 'function') {
 		R.callback_pool["ws_onmessage"].callback(parsed);
 	}
-};
+};//end of ws_client.onmessage
 
 	ws_client.onclose = function close() {
-  	console.log('on close disconnected');
+		R.status.ws_opened = false;
+  	console.log('ws.onclose');
   	console.log(arguments);
 	};
 
@@ -175,8 +186,7 @@ console.log(connection.extensions);
 
 	///////////////////////////// end of ws websocket client
 
-	R.event = {
-		on: function() {
+	R.on = function() {
 			switch (arguments[0]) {
 				case "ws_onmessage":
 					if (typeof(arguments[1]) === 'function') {
@@ -188,25 +198,33 @@ console.log(connection.extensions);
 					console.log("incorrect event name");
 				break;
 			}
-		},
-		emit: function (event_name, args) {
-			//console.log("In R.event.emit");
-			//console.log(arguments);
+		};
+
+	R.emit = function (api_name, args) {
+			console.log("In R.emit");
+			//console.log(arguments.callee.caller.toString());
+			console.log(arguments);
 			var transaction_id = guid();
-			//console.log("event_name: " + event_name);
-			//console.log("transaction_id " + transaction_id);
-			if (R.callback_pool && R.callback_pool[transaction_id]) return;
+			console.log("api_name: " + api_name);
+			console.log("transaction_id " + transaction_id);
+			if(R.callback_pool && R.callback_pool[transaction_id]){
+				return;
+			}
+
 			R.callback_pool[transaction_id] = {
 				trigger_once: true, 
 				transaction_id: transaction_id, 
-				callback: args.callback};
+				callback: args.callback
+			};
+
 			args.R_metadata = {transaction_id: transaction_id};
-			var msg = event_name + ' ' + JSON.stringify(args);
-			console.log("sending event: " + msg);
-			ws_client.send(msg);
-		},
-	};
-	console.log("xx");
+			var msg = api_name + ' ' + JSON.stringify(args);
+			console.log("calling api: " + msg);
+			//setTimeout(function(){
+				ws_client.send(msg);
+			//}, 500);
+		};
+	console.log("End of R loading");
 
 })('object' === typeof module ? module.exports : (this.R = {}), this);
 

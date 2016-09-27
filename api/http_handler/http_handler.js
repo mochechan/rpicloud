@@ -152,11 +152,11 @@ module.exports = {
   response.end();
 },
 
-"/user_status": function (request, response) {
+"/user_status": function (request, response, _rc) {
 	// Use this handler to see status
 	// please note: this is just an example of how to hook auth into session.js, its not ideal at all
   // let's hardcode a username and password variable into the url
- 	var urlParams = R.node.url.parse(request.url, true).query || {};
+ 	var urlParams = url.parse(request.url, true).query || {};
 
   if(typeof urlParams.user != 'undefined'){
  	  // if the "name" parameter has been sent, lets log in as that user
@@ -174,7 +174,17 @@ module.exports = {
   response.writeHead(200, {'Content-Type': 'text/plain'});
  	response.write(JSON.stringify(json));
   response.end();
-}
+},
+
+"/api": function(request, response, _rc){
+	console.log("called api request");
+	console.log(request);
+	var _req = {
+		
+	};
+	_rc.log(request.url);
+	response.end();
+},
 
 } // end of module.exports =
 

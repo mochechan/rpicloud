@@ -7,7 +7,7 @@ var rc = function rc () {
 	that.status = {dirname: __dirname, filename: __filename, };
 	that.verbose = arguments[0].verbose || false;
 	that.config = require('./config.json');
-	that.package = require('./package.json');
+	that.config.package = require('./package.json');
 	that.node = {
 		events: require('events'), 
 		fs: require('fs'), 

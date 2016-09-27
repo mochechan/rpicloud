@@ -1,7 +1,7 @@
 {
 	"debug_mode": true,
 	"log_path": "./log",
-	"html_path": "./html",
+	"html_path": "html",
 	"port": {
 		"base": 43210,
 		"tcp": 1,

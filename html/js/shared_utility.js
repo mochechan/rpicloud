@@ -9,7 +9,6 @@ var log = console.log;
 	//console.log('loading shared_utility.js');
 
 
-
 	// http://stackoverflow.com/questions/722668/traverse-all-the-nodes-of-a-json-object-tree-with-javascript
 	var traverse_json = exports.traverse_json = function traverse_json(json, func, stack) {
 		if (!stack) stack = [];
@@ -24,8 +23,8 @@ var log = console.log;
 	}
 
 	function processx(key, value, stack) {
-		console.log(stack);
-  	console.log(key + " : " + value);
+		//console.log(stack);
+  	//console.log(key + " : " + value);
 	}
 
 	var o = { 
@@ -36,10 +35,9 @@ var log = console.log;
     }
 	};
 
-	console.log(o);
-	console.log("------");
+	//console.log(o);
+	//console.log("------");
 	traverse_json(o, processx) ;
-
 
 	exports.validate = function validate(input, expect) {
 		if (!expect) {
