@@ -20,10 +20,10 @@ var parse = function () {
 	var arg_string = arguments[0].substring(first_space +1);
 	event = event.trim();
 	arg_string = arg_string.trim();
-	console.log("event");
-	console.log(event);
-	console.log("arg_string");
-	console.log(arg_string);
+	//console.log("event");
+	//console.log(event);
+	//console.log("arg_string");
+	//console.log(arg_string);
 	var args;
 	try {
 		args = JSON.parse(arg_string);

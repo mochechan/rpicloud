@@ -11,18 +11,18 @@
 
 <textarea id="chat-content" style="width:400px;height:200px">asdf</textarea><br/>
 
-    <input type="text" id="username" name="" value="" placeholder="Choose username"/>
-    <input type="text" id="message" name="" value="" placeholder="Enter chat message"/>
-    <input type="button" id="send" name="" value="Send" onclick="sendMessage()"/>
+  <input type="text" id="username" name="" value="" placeholder="Choose username"/>
+  <input type="text" id="message" name="" value="" placeholder="Enter chat message"/>
+  <input type="button" id="send" name="" value="Send" onclick="sendMessage()"/>
     </br>
 
-<strong id="test01" onclick="test01('test')">TEST01_handler R.emit();</strong> </br>
-<strong id="test02" onclick="test02('test')">TEST02_handler restful login </strong> </br>
-<strong id="test03" onclick="test03('test')">TEST03_handler restful logout </strong> </br>
+<strong id="test01" onclick="test01('t')">TEST01 R.emit();</strong> </br>
+<strong id="test02" onclick="test02('t')">TEST02 restful login </strong> </br>
+<strong id="test03" onclick="test03('t')">TEST03 restful logout </strong> </br>
 
 <script>
 function sendMessage(){
-	
+	//R.emit('exec', );
 }
 
 /////////////////////// use rpicloud
@@ -36,13 +36,15 @@ function sendMessage(){
 		console.log(arguments);
 	});
 
+	R.log("testing log" );
+
 	R.on("ws_onmessage", function () {
 		console.log("R.on ws_onmessage callback");
 		console.log(arguments);
 	});
 
 var test01 = function (d) {
-	R.emit("handler", {"handler":"demo1", test:"test01", others:{}, function(){
+	R.emit("parse_command", {"command":"demo1", test:"test01", others:{}, function(){
 		console.log("exec callback arguments");
 		console.log(arguments);
 	}});

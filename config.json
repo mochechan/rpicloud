@@ -3,6 +3,8 @@
 	"log_path": "./log",
 	"html_path": "html",
 	"port": {
+		"ws": 9090,
+		"http": 9080,
 		"base": 43210,
 		"tcp": 1,
 		"unused": 0

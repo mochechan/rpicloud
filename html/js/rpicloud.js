@@ -200,14 +200,15 @@ console.log(connection.extensions);
 			}
 		};
 
-	R.emit = function (api_name, args) {
+	R.emit = function(api_name, args) {
 			console.log("In R.emit");
-			//console.log(arguments.callee.caller.toString());
 			console.log(arguments);
 			var transaction_id = guid();
 			console.log("api_name: " + api_name);
 			console.log("transaction_id " + transaction_id);
+
 			if(R.callback_pool && R.callback_pool[transaction_id]){
+				console.log("invalid transaction_id: " + transaction_id);
 				return;
 			}
 
@@ -223,7 +224,20 @@ console.log(connection.extensions);
 			//setTimeout(function(){
 				ws_client.send(msg);
 			//}, 500);
-		};
+	};
+
+	R.log = function(msg){
+		if(typeof msg === 'string'){
+			//if(R.status.)
+			var m = {msg: msg};
+			ws_client.send('log ' + JSON.stringify(m));
+		} else {
+			console.log("invalid log input");
+		}
+
+	};
+
+	
 	console.log("End of R loading");
 
 })('object' === typeof module ? module.exports : (this.R = {}), this);

@@ -1,6 +1,6 @@
 /* to support 
 static html web services
-sockjs
+ws
 file upload
 */
 
@@ -13,23 +13,19 @@ var fs = require('fs');
 var path = require('path');
 var sesh = require('sesh').session; //don't use magicSession https://github.com/marak/session.js
 //alternative: https://github.com/senchalabs/connect
-var formidable = require('formidable'); // for files upload
 
 var WebSocketServer = require('ws').Server;
 
-//var node_static = require('node-static');
-var express_port = 9999;
 var html_path = __dirname;
 var port = {
-	http: 8080,
+	http: 9080,
+	ws: 9090,
 	express: 9999,
 	cloudcmd: 9990, 
 	};
 
 var http_server;
-
 var ws_clients = {}; //all clients for ws
-
 var handler = require('./http_handler/http_handler.js');
 
 
@@ -46,54 +42,51 @@ exports.http_server_start = function () {
 		_rc = arguments[0]._rc;
 		log = arguments[0]._rc.log;
 	} else log = console.log;
-	port.http = _rc.config.port.http || 8080;
+	port.http = _rc.config.port.http || port.http;
 
-	log('in http_server_start');
+	//log('in http_server_start');
 	//log(arguments);
 
-
-
-
-	// 2. Static files server
-	//var static_directory = new node_static.Server(html_path);
 
 	// 3. Usual http stuff
 	http_server = http.createServer(function onRequest(request_, response_) {
 		sesh(request_, response_, function(request, response){
 			log("http requested:" + request.url);
-			//console.log("################# request.session");
+			//console.log("######### request.session");
 			//console.log(request.session);
 
 			// for file upload handlers
   		var pathname = url.parse(request.url).pathname;
-	  	if (typeof handler[pathname] === 'function') {
+	  	if(typeof handler[pathname] === 'function'){
 	  		log("http_handler: " + pathname);
   	  	handler[pathname](request, response, _rc);
 	 	 } else {
-	  	  //console.log("No request handler found for " + pathname);
+	  	  //log("invalid request: " + pathname);
   	  	//response.writeHead(404, {"Content-Type": "text/html"});
 	  	  //response.write("404 Not found");
   	  	//response.end();
 		  }
 		});
 	}).listen(port.http, '0.0.0.0', function() {
- 		log("http_server has created at port: " + port.http);
+ 		log("http_server port: " + port.http);
 	});
 
 	//var ws = new WebSocketServer({server: http_server});
-	var ws = new WebSocketServer({port: 9090});
+	var ws = new WebSocketServer({port: _rc.config.port.ws || port.ws});
 	ws.on('connection', function connection(conn) {
-		log("ws connected: " + conn.upgradeReq.headers.origin || "");
-		//console.log(conn.upgradeReq.headers.origin);
+		log("ws connected: " + conn.upgradeReq.headers.origin || "invalid");
+		//console.log(conn.upgradeReq.headers);
 		ws_clients[conn.id] = conn;
 
 	  conn.on('message', function(message) {
 			log("ws received: ");
 			log(message);
-			_rc.call_api({api_name: message.command, api_args: {message: message, callback: function(){
-				log("sockjs callback...");
-				log(arguments);
-	    	conn.write(arguments);
+			_rc.call_api({api_name: 'parse_command', api_args: {command: message, callback: function(api_result){
+				log("ws callback: ");
+				log(api_result);
+				//console.log("conn.send:");
+				//console.log(api_result);
+	    	conn.send(JSON.stringify(api_result));
 			}}});
 	  });
 
@@ -105,22 +98,27 @@ exports.http_server_start = function () {
 	// static_html "handlers" should prevent file upload handlers
 	http_server.addListener('request', function(req, res) {
 		//log("server.addListener request: " + req.url);
-	  if (typeof handler[url.parse(req.url).pathname] === 'function') return; 
+	  if(typeof handler[url.parse(req.url).pathname] === 'function'){ 
+			return; 
+		}
 		var full = path.resolve(_rc.status.dirname, _rc.config.html_path, req.url.substring(1));
 		log("serve: " + full);
 		fs.readFile(full, function(err, html){
 		  res.writeHeader(200, {"Content-Type": "text/html"});  
 			if(err){ 
-				log( err);
+				log(err);
 				return;
 			}
       res.write(html);  
       res.end();  
 		});
 	});
+
 	http_server.addListener('upgrade', function(req,res){
 		log("server.addListener upgrade: " + req.url);
-	  if (typeof handler[url.parse(req.url).pathname] === 'function') return; 
+	  if(typeof handler[url.parse(req.url).pathname] === 'function'){ 
+			return; 
+		}
   	res.end();
 	});
 

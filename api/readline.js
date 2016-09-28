@@ -31,6 +31,7 @@ module.exports = function readline () {
 			return;
 		}
 		log("readline got: " + command);
+		// standard 20160928
 		_rc.call_api({api_name: 'parse_command', api_args: {command: command}});
 		prompt();
 	}).on('close', function() {
